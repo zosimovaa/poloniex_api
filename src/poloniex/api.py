@@ -141,4 +141,4 @@ class PublicAPI:
         timezone = pytz.timezone("UTC")
         without_timezone = datetime.datetime.strptime(date, "%Y-%m-%d %H:%M:%S")
         with_timezone = timezone.localize(without_timezone)
-        return with_timezone.timestamp()
+        return int(with_timezone.timestamp())
