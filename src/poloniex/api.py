@@ -109,6 +109,34 @@ class PublicAPI:
                 #print("done")
         return pages
 
+    def get_trade_history_by_parts(self, currencyPair, start, end):
+        """
+        Returns the past 200 trades for a given market,
+        or up to 1,000 trades between a range specified in UNIX timestamps
+        by the "start" and "end" GET parameters
+        :param str currencyPair: A string that defines the market, "USDT_BTC" for example. Use "all" for all markets.
+        :param int start: The start of the window in seconds since the unix epoch.
+        :param int end: The end of the window in seconds since the unix epoch.
+        :return: list of trade operation
+        """
+        if isinstance(start, str):
+            start = self.date_to_unix_ts_in_utc(start)
+
+        if isinstance(end, str):
+            end = self.date_to_unix_ts_in_utc(end)
+
+        command = "returnTradeHistory&currencyPair={0}&start={1}&end={2}"
+        done = False
+        while not done:
+            response = self.execute(command.format(currencyPair, start, end))
+            response.sort(key=lambda x: x["date"], reverse=True)
+
+            if len(response):
+                end = self.date_to_unix_ts_in_utc(response[-1]["date"]) - 1
+                yield response
+            else:
+                done = True
+
     def get_tickers(self):
         """
         Retrieves summary information for each currency pair listed on the exchange
