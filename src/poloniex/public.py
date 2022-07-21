@@ -2,25 +2,21 @@ import requests
 import datetime
 import pytz
 
-# import logging
-# logger = logging.getLogger(__name__)
+import logging
+logger = logging.getLogger(__name__)
 
 
 class PublicAPIError(Exception):
     """Ошибка при обращении к публичному API"""
-    CODES = {
-        "req_error": "PUBLIC_API_ERROR:REQUEST_ERROR",
-        "unknown_cmd": "PUBLIC_API_ERROR:UNKNOWN_COMMAND",
-        "bad_period": "PUBLIC_API_ERROR:BAD_PERIOD"
-    }
 
-    def __init__(self, err_code, method, body=None):
-        self.err_code = self.CODES[err_code]
+    def __init__(self, message, method, body=None):
+        self.message = message
         self.method = method
         self.body = body
+        super().__init__(self.message)
 
     def __str__(self):
-        message = "Code: {0}. Method: {1}".format(self.err_code, self.method)
+        message = "{0}. Method: {1}".format(self.message, self.method)
         if self.body is not None:
             message += ". Response: {0})".format(self.body)
         return message
@@ -33,14 +29,12 @@ class PublicAPI:
 
     def execute(self, command):
         try:
-            response_raw = requests.get(self.PUBLIC_API_URL + command)
-            response = response_raw.json()
+            response = requests.get(self.PUBLIC_API_URL + command).json()
         except Exception as e:
-            raise PublicAPIError("req_error", command, body=e)
+            raise PublicAPIError(e, command) from e
 
         if 'error' in response:
             raise PublicAPIError(response["error"], command, body=response)
-
         return response
 
     def get_orderbook(self, currencyPair, depth):
