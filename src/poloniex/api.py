@@ -37,6 +37,10 @@ class PublicAPI:
             response = response_raw.json()
         except Exception as e:
             raise PublicAPIError("req_error", command, body=e)
+
+        if 'error' in response:
+            raise PublicAPIError(response["error"], command, body=response)
+
         return response
 
     def get_orderbook(self, currencyPair, depth):
@@ -99,14 +103,10 @@ class PublicAPI:
             if len(response):
                 pages += response
                 end = self.date_to_unix_ts_in_utc(response[-1]["date"]) - 1
-
-                #clear_output(wait=True)
-                #print("Осталось: {0}".format(end - start))
-
+                if end <= start:
+                    done = True
             else:
                 done = True
-                #clear_output(wait=True)
-                #print("done")
         return pages
 
     def get_trade_history_batch(self, currency_pair, start, end):
