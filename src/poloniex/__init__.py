@@ -1,1 +1,1 @@
-from poloniex.api import PublicAPI, PublicAPIError
+from poloniex.public import PublicAPI, PublicAPIError
