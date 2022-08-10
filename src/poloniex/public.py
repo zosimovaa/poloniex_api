@@ -115,9 +115,11 @@ class PublicAPI:
         """
         if isinstance(start, str):
             start = self.date_to_unix_ts_in_utc(start)
+        logger.debug("start: {]".format(start))
 
         if isinstance(end, str):
             end = self.date_to_unix_ts_in_utc(end)
+        logger.debug("end: {]".format(end))
 
         command = "returnTradeHistory&currencyPair={0}&start={1}&end={2}"
         done = False
@@ -125,13 +127,18 @@ class PublicAPI:
             response = self.execute(command.format(currency_pair, start, end))
             response.sort(key=lambda x: x["date"], reverse=True)
 
+            logger.debug("len response: {]".format(len(response)))
+
             if len(response):
                 yield response
                 end = self.date_to_unix_ts_in_utc(response[-1]["date"]) - 1
+                logger.debug("new end: {]".format(end))
                 if end <= start:
                     done = True
             else:
                 done = True
+
+            logger.debug("done: {]".format(done))
 
     def get_tickers(self):
         """
