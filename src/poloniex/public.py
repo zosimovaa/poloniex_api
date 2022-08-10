@@ -115,30 +115,34 @@ class PublicAPI:
         """
         if isinstance(start, str):
             start = self.date_to_unix_ts_in_utc(start)
-        logger.debug("start: {]".format(start))
 
         if isinstance(end, str):
             end = self.date_to_unix_ts_in_utc(end)
-        logger.debug("end: {]".format(end))
+
 
         command = "returnTradeHistory&currencyPair={0}&start={1}&end={2}"
         done = False
         while not done:
+            logger.debug("===================================================")
+            logger.debug("Download data from {0} to {1}".format(start, end))
             response = self.execute(command.format(currency_pair, start, end))
             response.sort(key=lambda x: x["date"], reverse=True)
-
-            logger.debug("len response: {]".format(len(response)))
+            logger.debug("len response: {}".format(len(response)))
 
             if len(response):
+                logger.debug("first record: {}".format(response[0]))
+                logger.debug("last record: {}".format(response[-1]))
+
                 yield response
                 end = self.date_to_unix_ts_in_utc(response[-1]["date"]) - 1
-                logger.debug("new end: {]".format(end))
+                logger.debug("new end: {}".format(end))
                 if end <= start:
                     done = True
             else:
+                logger.debug("response zero lenght")
                 done = True
 
-            logger.debug("done: {]".format(done))
+            logger.debug("done: {}".format(done))
 
     def get_tickers(self):
         """
